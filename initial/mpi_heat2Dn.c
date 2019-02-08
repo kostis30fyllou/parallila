@@ -1,5 +1,5 @@
 /****************************************************************************
- * FILE: mpi_heat2D.c
+ * FILE: mpi_heat2Dn.c
  * DESCRIPTIONS:  
  *   HEAT2D Example - Parallelized C Version
  *   This example is based on a simplified two-dimensional heat 
@@ -26,8 +26,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define NXPROB      20                 /* x dimension of problem grid */
-#define NYPROB      20                 /* y dimension of problem grid */
+#define NXPROB      80                 /* x dimension of problem grid */
+#define NYPROB      64                /* y dimension of problem grid */
 #define STEPS       100                /* number of time steps */
 #define MAXWORKER   8                  /* maximum number of worker tasks */
 #define MINWORKER   3                  /* minimum number of worker tasks */
@@ -74,7 +74,7 @@ int main (int argc, char *argv[])
          printf("Quitting...\n");
          MPI_Abort(MPI_COMM_WORLD, rc);
          exit(1);
-         }
+      }
       printf ("Starting mpi_heat2D with %d worker tasks.\n", numworkers);
 
       /* Initialize grid */

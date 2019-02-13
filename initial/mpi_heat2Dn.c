@@ -1,5 +1,5 @@
 /****************************************************************************
- * FILE: mpi_heat2Dn.c
+ * FILE: mpi_heat2D.c
  * DESCRIPTIONS:  
  *   HEAT2D Example - Parallelized C Version
  *   This example is based on a simplified two-dimensional heat 
@@ -26,9 +26,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define NXPROB      80                 /* x dimension of problem grid */
-#define NYPROB      64                /* y dimension of problem grid */
-#define STEPS       100                /* number of time steps */
+#define NXPROB      9                /* x dimension of problem grid */
+#define NYPROB      9                 /* y dimension of problem grid */
+#define STEPS       1                /* number of time steps */
 #define MAXWORKER   8                  /* maximum number of worker tasks */
 #define MINWORKER   3                  /* minimum number of worker tasks */
 #define BEGIN       1                  /* message tag */
@@ -74,7 +74,7 @@ int main (int argc, char *argv[])
          printf("Quitting...\n");
          MPI_Abort(MPI_COMM_WORLD, rc);
          exit(1);
-      }
+         }
       printf ("Starting mpi_heat2D with %d worker tasks.\n", numworkers);
 
       /* Initialize grid */
@@ -224,11 +224,11 @@ void update(int start, int end, int ny, float *u1, float *u2)
  *  subroutine inidat
  *****************************************************************************/
 void inidat(int nx, int ny, float *u) {
-   int ix, iy;
+    int ix, iy;
 
-   for (ix = 0; ix <= nx-1; ix++)
-     for (iy = 0; iy <= ny-1; iy++)
-        *(u+ix*ny+iy) = (float)(ix * (nx - ix - 1) * iy * (ny - iy - 1));
+    for (ix = 0; ix <= nx-1; ix++) 
+      for (iy = 0; iy <= ny-1; iy++)
+         *(u+ix*ny+iy) = (float)(ix * (nx - ix - 1) * iy * (ny - iy - 1));
 }
 
 /**************************************************************************

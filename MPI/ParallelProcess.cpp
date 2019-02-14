@@ -30,6 +30,11 @@ ParallelProcess::ParallelProcess(int* argc, char** argv[]) {
 
     // Cartesian create with reorder on
     MPI_Cart_create(MPI_COMM_WORLD, 2, dims, periods, reorder, &comm);
+    if(NXPROB%size != 0 || NYPROB%size != 0){
+        perror("Grid  cannot be divided with this number of processes");
+        MPI_Abort(comm, 0);
+        exit(1);
+    }
     // my rank
     MPI_Comm_rank(comm, &rank);
     // my coords
@@ -37,11 +42,6 @@ ParallelProcess::ParallelProcess(int* argc, char** argv[]) {
     // find neighbours positions
     MPI_Cart_shift(comm , 0 , 1, &positions[UP], &positions[DOWN]);
     MPI_Cart_shift(comm , 1 , 1, &positions[LEFT], &positions[RIGHT]);
-    if(NXPROB%threads != 0 || NYPROB%threads != 0){
-        perror("Grid  cannot be divided with this number of processes");
-        MPI_Abort(comm, 0);
-        exit(1);
-    }
     // initialize x and y of each block
     x = NXPROB/size + 2;
     y = NYPROB/size + 2;

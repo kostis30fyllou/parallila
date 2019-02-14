@@ -177,9 +177,10 @@ int ParallelProcess::update(int ix, int iy, float* u1, float* u2) {
 
 int ParallelProcess::inner_update(int iz) {
     int changes = 0;
-    for (int ix = 2; ix < x-2; ix++) {
-        for (int iy = 2; iy < y-2; iy++){
-            changes += update(ix, iy, &(u[iz*x*y]), &(u[(1-iz)*x*y]));
+#pragma omp parallel for reduction(+ : changes) schedule(static)
+    for (int ix = 2; ix < x - 2; ix++) {
+        for (int iy = 2; iy < y - 2; iy++) {
+            changes += update(ix, iy, &(u[iz * x * y]), &(u[(1 - iz) * x * y]));
         }
     }
     return changes;
@@ -187,6 +188,7 @@ int ParallelProcess::inner_update(int iz) {
 
 int ParallelProcess::outer_update(int iz) {
     int changes = 0;
+#pragma omp parallel for reduction(+ : changes) schedule(static)
     for(int iy = 1; iy < y-1; iy++) {
         // UP
         changes += update(1, iy, &(u[iz*x*y]), &(u[(1-iz)*x*y]));
@@ -194,6 +196,7 @@ int ParallelProcess::outer_update(int iz) {
         changes += update(x-2, iy, &(u[iz*x*y]), &(u[(1-iz)*x*y]));
     }
 
+#pragma omp parallel for reduction(+ : changes) schedule(static)
     for(int ix = 1; ix < x-1; ix++) {
         // LEFT
         changes += update(ix, 1, &(u[iz*x*y]), &(u[(1-iz)*x*y]));

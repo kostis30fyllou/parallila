@@ -2,11 +2,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <omp.h>
 
-#define NXPROB      20                /* x dimension of problem grid */
+#define NXPROB      20               /* x dimension of problem grid */
 #define NYPROB      20                 /* y dimension of problem grid */
-#define STEPS       100000                /* number of time steps */
-#define N       10000                   /* number of reduce check steps */
+#define STEPS       100                /* number of time steps */
+#define N       10                  /* number of reduce check steps */
 #define UTAG        0                  /* message tag */
 #define DTAG        1                  /* message tag */
 #define LTAG        2                  /* message tag */

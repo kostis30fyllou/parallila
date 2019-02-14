@@ -12,6 +12,7 @@ int main(int argc, char* argv[]) {
     tstart = MPI_Wtime();
     process->Send_Init();
     process->Recv_Init();
+#pragma opm parallel num_threads(8)
     for(int i = 0; i < STEPS; i++) {
         int changes = 0;
         process->Start(iz);

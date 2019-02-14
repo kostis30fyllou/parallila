@@ -5,17 +5,26 @@
  * Constructor and Destructor
  */
 
+struct Parms {
+    float cx;
+    float cy;
+} parms = {0.1, 0.1};
+
 ParallelProcess::ParallelProcess(int* argc, char** argv[]) {
     int periods[2];
     int dims[2]; //  2D matrix/grid
     int size;
     int reorder = 1;
-    int error = 0;
     periods[0] = 0; // no row periodic
     periods[1] = 0; // no column periodic
     MPI_Init(argc, argv);
     MPI_Comm_size(MPI_COMM_WORLD, &threads);
     size = sqrt(threads);
+    if(size * size != threads) {
+        perror("Process number must have square root integer");
+        MPI_Abort(MPI_COMM_WORLD, 0);
+        exit(1);
+    }
     dims[0] = size;
     dims[1] = size;
 
@@ -28,8 +37,9 @@ ParallelProcess::ParallelProcess(int* argc, char** argv[]) {
     // find neighbours positions
     MPI_Cart_shift(comm , 0 , 1, &positions[UP], &positions[DOWN]);
     MPI_Cart_shift(comm , 1 , 1, &positions[LEFT], &positions[RIGHT]);
-    if((NXPROB*NYPROB) % threads != 0 ){
-        MPI_Abort(comm, error);
+    if(NXPROB%threads != 0 || NYPROB%threads != 0){
+        perror("Grid  cannot be divided with this number of processes");
+        MPI_Abort(comm, 0);
         exit(1);
     }
     // initialize x and y of each block
@@ -44,9 +54,9 @@ ParallelProcess::ParallelProcess(int* argc, char** argv[]) {
         }
     }
     // initiate my MPI Data types
-    MPI_Type_contiguous(x-2, MPI_FLOAT, &row);
+    MPI_Type_contiguous(y-2, MPI_FLOAT, &row);
     MPI_Type_commit(&row);
-    MPI_Type_vector(y-2, sizeof(float), x, MPI_FLOAT, &column);
+    MPI_Type_vector(x-2, 1, y, MPI_FLOAT, &column);
     MPI_Type_commit(&column);
 }
 
@@ -87,13 +97,13 @@ void ParallelProcess::Start(int iz) {
     }
 }
 
-void ParallelProcess::WaitAll(int iz) {
-    for(int i = 0; i < 4; i++) {
-        MPI_Wait(&recv[iz][i], MPI_STATUS_IGNORE);
-        MPI_Wait(&send[iz][i], MPI_STATUS_IGNORE);
-    }
+void ParallelProcess::WaitRecv(int iz) {
+    MPI_Waitall(4, recv[iz], MPI_STATUSES_IGNORE);
 }
 
+void ParallelProcess::WaitSend(int iz) {
+    MPI_Waitall(4, send[iz], MPI_STATUSES_IGNORE);
+}
 
 /**
  *  Write function and convert to string
@@ -105,7 +115,7 @@ void ParallelProcess::write(const char* file, int iz) {
     char* str = convertToString(iz);
     if(MPI_File_open(comm, file, MPI_MODE_RDWR|MPI_MODE_CREATE, MPI_INFO_NULL, &fp) > 0) {
         perror("Could not open this file");
-        MPI_Abort(comm, -1);
+        MPI_Abort(comm, 0);
     }
     // initialize MPI string type
     MPI_Type_contiguous(CHARSPERNUM, MPI_CHAR, &strtype);
@@ -128,15 +138,15 @@ char* ParallelProcess::convertToString(int iz) {
     const char* endfmt = "%6.1f\n";
     char *str = new char[(x - 2) * (y - 2) * CHARSPERNUM];
     int count = 0;
-    for (int ix = 0; ix < x - 2; ix++) {
-        for (int iy = 0; iy < y - 3; iy++) {
-            sprintf(&str[count * CHARSPERNUM], fmt, u[iz*x*y + ix*y + iy + y + 1]);
+    for (int ix = 1; ix <= x - 2; ix++) {
+        for (int iy = 1; iy < y - 2; iy++) {
+            sprintf(&str[count * CHARSPERNUM], fmt, u[iz*x*y + ix*y + iy]);
             count++;
         }
         // if we are on the right side of file change line
         if(coords[1] == sqrt(threads) - 1)
-            sprintf(&str[count * CHARSPERNUM], endfmt, u[iz*x*y + ix*y + y-3 + y + 1]);
-        else sprintf(&str[count * CHARSPERNUM], fmt, u[iz*x*y + ix*y + y-3 + y + 1]);
+            sprintf(&str[count * CHARSPERNUM], endfmt, u[iz*x*y + ix*y + y-2]);
+        else sprintf(&str[count * CHARSPERNUM], fmt, u[iz*x*y + ix*y + y-2]);
         count++;
     }
     return str;
@@ -147,8 +157,55 @@ char* ParallelProcess::convertToString(int iz) {
  * Heat functions
  */
 void ParallelProcess::inidat() {
-    for (int ix = 0; ix < x - 2; ix++)
-        for (int iy = 0; iy < y - 2; iy++)
-            u[ix*y + iy + y + 1] = (float)(ix * (x - ix - 3) * iy * (y - iy - 3));
+    for (int ix = 1; ix <= x - 2; ix++)
+        for (int iy = 1; iy <= y - 2; iy++)
+            u[ix*y + iy] = (float)((ix-1) * ((x-2) - (ix-1) - 1) * (iy-1) * ((y-2) - (iy-1) - 1)) + 10;
+}
+
+int ParallelProcess::update(int ix, int iy, float* u1, float* u2) {
+    u2[ix*y+iy] = u1[ix*y+iy]  +
+                    parms.cx * (u1[(ix+1)*y+iy] +
+                                u1[(ix-1)*y+iy] -
+                                2.0 * u1[ix*y+iy]) +
+                    parms.cy * (u1[ix*y+iy+1] +
+                                u1[ix*y+iy-1] -
+                                2.0 * u1[ix*y+iy]);
+    if(u2[ix*y+iy] == u1[ix*y+iy])
+        return 0;
+    else return 1;
+}
+
+int ParallelProcess::inner_update(int iz) {
+    int changes = 0;
+    for (int ix = 2; ix < x-2; ix++) {
+        for (int iy = 2; iy < y-2; iy++){
+            changes += update(ix, iy, &(u[iz*x*y]), &(u[(1-iz)*x*y]));
+        }
+    }
+    return changes;
+}
+
+int ParallelProcess::outer_update(int iz) {
+    int changes = 0;
+    for(int iy = 1; iy < y-1; iy++) {
+        // UP
+        changes += update(1, iy, &(u[iz*x*y]), &(u[(1-iz)*x*y]));
+        // DOWN
+        changes += update(x-2, iy, &(u[iz*x*y]), &(u[(1-iz)*x*y]));
+    }
+
+    for(int ix = 1; ix < x-1; ix++) {
+        // LEFT
+        changes += update(ix, 1, &(u[iz*x*y]), &(u[(1-iz)*x*y]));
+        // RIGHT
+        changes += update(ix, y-2, &(u[iz*x*y]), &(u[(1-iz)*x*y]));
+    }
+    return changes;
+}
+
+int ParallelProcess::reduce(int *flag) {
+    int ret;
+    MPI_Allreduce(flag, &ret, 1, MPI_INT, MPI_SUM, comm);
+    return ret;
 }
 

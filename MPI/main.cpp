@@ -13,13 +13,17 @@ int main(int argc, char* argv[]) {
     process->Recv_Init();
     for(int i = 0; i < STEPS; i++) {
         process->Start(iz);
-        process->WaitAll(iz);
+        process->inner_update(iz);
+        process->WaitRecv(iz);
+        process->outer_update(iz);
         iz = 1 - iz;
+        process->WaitSend(1-iz);
     }
     tend = MPI_Wtime();
+    process->write("final.dat", 0);
     local = tend -tstart;
-    MPI_Reduce(&local,&global,1,MPI_DOUBLE,MPI_MAX,0,comm);
     process->sync();
+    process->getParallelTime(&global, &local);
     if(process->getRank() == 0) {
         printf("Total time elapsed = %lf \n",global);
     }

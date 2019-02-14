@@ -26,9 +26,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define NXPROB      9                /* x dimension of problem grid */
-#define NYPROB      9                 /* y dimension of problem grid */
-#define STEPS       1                /* number of time steps */
+#define NXPROB      20                /* x dimension of problem grid */
+#define NYPROB      20                 /* y dimension of problem grid */
+#define STEPS       1000                /* number of time steps */
 #define MAXWORKER   8                  /* maximum number of worker tasks */
 #define MINWORKER   3                  /* minimum number of worker tasks */
 #define BEGIN       1                  /* message tag */

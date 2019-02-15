@@ -5,7 +5,7 @@
 
 #define NXPROB      80                /* x dimension of problem grid */
 #define NYPROB      64                 /* y dimension of problem grid */
-#define STEPS       1000                /* number of time steps */
+#define STEPS       500                /* number of time steps */
 #define UTAG        0                  /* message tag */
 #define DTAG        1                  /* message tag */
 #define LTAG        2                  /* message tag */

@@ -20,17 +20,19 @@ ParallelProcess::ParallelProcess(int* argc, char** argv[]) {
     MPI_Init(argc, argv);
     MPI_Comm_size(MPI_COMM_WORLD, &threads);
     size = sqrt(threads);
-    if(size * size != threads) {
-        perror("Processes number must have square root integer");
-        MPI_Abort(MPI_COMM_WORLD, 0);
-        exit(1);
-    }
     dims[0] = size;
     dims[1] = size;
+    // Calculate dimensions of the grid
+    while(dims[0]*dims[1] != threads) {
+        if(dims[0]*dims[1] < threads) {
+            dims[0]++;
+        }
+        else dims[1]--;
+    }
 
     // Cartesian create with reorder on
     MPI_Cart_create(MPI_COMM_WORLD, 2, dims, periods, reorder, &comm);
-    if(NXPROB%size != 0 || NYPROB%size != 0){
+    if(NXPROB%dims[0] != 0 || NYPROB%dims[1] != 0){
         perror("Grid  cannot be divided with this number of processes");
         MPI_Abort(comm, 0);
         exit(1);
@@ -43,8 +45,8 @@ ParallelProcess::ParallelProcess(int* argc, char** argv[]) {
     MPI_Cart_shift(comm , 0 , 1, &positions[UP], &positions[DOWN]);
     MPI_Cart_shift(comm , 1 , 1, &positions[LEFT], &positions[RIGHT]);
     // initialize x and y of each block
-    x = NXPROB/size + 2;
-    y = NYPROB/size + 2;
+    x = NXPROB/dims[0] + 2;
+    y = NYPROB/dims[1] + 2;
     // initialize array of grid
     u = new float[2*x*y];
     for (int ix = 0; ix < x; ix++) {

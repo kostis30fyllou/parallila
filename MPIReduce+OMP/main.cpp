@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
     tstart = MPI_Wtime();
     process->Send_Init();
     process->Recv_Init();
-#pragma opm parallel num_threads(8)
+#pragma opm parallel num_threads(THREADS)
     for(int i = 0; i < STEPS; i++) {
         int changes = 0;
         process->Start(iz);
@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
             flag = 0;
         iz = 1 - iz;
         if(i%N == 0 && process->reduce(&flag) == 0) {
-            break;
+            i = STEPS;
         }
         process->WaitSend(1-iz);
     }

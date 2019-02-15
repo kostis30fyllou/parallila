@@ -13,6 +13,8 @@
 #define LTAG        2                  /* message tag */
 #define RTAG        3                  /* message tag */
 #define CHARSPERNUM 7                  /* chars per number*/
+#define THREADS 4                      /* number of open mp threads */
+#define CHUNK 1                         /* scheduling chunk size*/
 
 typedef enum positions{UP=0, DOWN, LEFT, RIGHT} positions;
 

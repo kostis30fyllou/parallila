@@ -21,7 +21,7 @@ ParallelProcess::ParallelProcess(int* argc, char** argv[]) {
     MPI_Comm_size(MPI_COMM_WORLD, &threads);
     size = sqrt(threads);
     if(size * size != threads) {
-        perror("Process number must have square root integer");
+        perror("Processes number must have square root integer");
         MPI_Abort(MPI_COMM_WORLD, 0);
         exit(1);
     }

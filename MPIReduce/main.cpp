@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
             flag = 0;
         iz = 1 - iz;
         if(i%N == 0 && process->reduce(&flag) == 0) {
-            break;
+            i = STEPS;
         }
         process->WaitSend(1-iz);
     }

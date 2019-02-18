@@ -41,9 +41,8 @@ public:
     int getRank() { return rank; };
     void sync() { MPI_Barrier(comm); };
 
-    //Write in file as string
+    //Write in file
     void write(const char* file, int iz);
-    char* convertToString(int iz);
 
     // Sending and Receiving functions
     void Send_Init();

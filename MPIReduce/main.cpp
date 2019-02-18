@@ -29,7 +29,7 @@ int main(int argc, char* argv[]) {
         process->WaitSend(1-iz);
     }
     tend = MPI_Wtime();
-    process->write("final.dat", 0);
+    process->write("final.dat", iz);
     local = tend -tstart;
     process->getParallelTime(&global, &local);
     if(process->getRank() == 0) {

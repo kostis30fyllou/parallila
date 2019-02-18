@@ -3,10 +3,10 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define NXPROB      20                /* x dimension of problem grid */
-#define NYPROB      20                 /* y dimension of problem grid */
-#define STEPS       100000                /* number of time steps */
-#define N       10000                   /* number of reduce check steps */
+#define NXPROB      80                /* x dimension of problem grid */
+#define NYPROB      64                 /* y dimension of problem grid */
+#define STEPS       500                /* number of time steps */
+#define N       100                  /* number of reduce check steps */
 #define UTAG        0                  /* message tag */
 #define DTAG        1                  /* message tag */
 #define LTAG        2                  /* message tag */
@@ -42,9 +42,8 @@ public:
     int getRank() { return rank; };
     void sync() { MPI_Barrier(comm); };
 
-    //Write in file as string
+    //Write in file
     void write(const char* file, int iz);
-    char* convertToString(int iz);
 
     // Sending and Receiving functions
     void Send_Init();

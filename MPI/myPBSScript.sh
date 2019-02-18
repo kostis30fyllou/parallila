@@ -1,13 +1,13 @@
 #!/bin/bash
 
 #Max VM size
-PBS -l pvmem=2G
+#PBS -l pvmem=2G
 
 # Max Wall time
 #PBS -l walltime=0:01:00  		# Example, 1 minute
 
 # How many nodes and tasks per node
-#PBS -l nodes=2:ppn=8  			# 2 nodes with 8 tasks/node => 16 tasks
+#PBS -l nodes=16:ppn=8  			# 2 nodes with 8 tasks/node => 16 tasks
 
 #Which Queue
 #PBS -q parsys			 	# This is the only accessible queue for rbs

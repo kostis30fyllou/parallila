@@ -108,51 +108,27 @@ void ParallelProcess::WaitSend(int iz) {
 }
 
 /**
- *  Write function and convert to string
+ *  Write function
  */
 void ParallelProcess::write(const char* file, int iz) {
     MPI_File fp;
-    MPI_Datatype filetype, strtype, blocktype;
+    MPI_Datatype filetype, blocktype;
     MPI_Status status;
-    char* str = convertToString(iz);
     if(MPI_File_open(comm, file, MPI_MODE_RDWR|MPI_MODE_CREATE, MPI_INFO_NULL, &fp) > 0) {
         perror("Could not open this file");
         MPI_Abort(comm, 0);
     }
-    // initialize MPI string type
-    MPI_Type_contiguous(CHARSPERNUM, MPI_CHAR, &strtype);
-    MPI_Type_commit(&strtype);
     int sizes[2] = {NXPROB, NYPROB};
     int local[2] = {x-2, y-2};
     int starts[2] = {coords[0]*local[0], coords[1]*local[1]};
-    MPI_Type_create_subarray(2, sizes, local, starts, MPI_ORDER_C, strtype, &filetype);
+    MPI_Type_create_subarray(2, sizes, local, starts, MPI_ORDER_C, MPI_FLOAT, &filetype);
     MPI_Type_commit(&filetype);
-    MPI_File_set_view(fp, 0, strtype, filetype, "native", MPI_INFO_NULL);
-    MPI_File_write_all(fp, str, (x - 2) * (y - 2), strtype, &status);
+    MPI_File_set_view(fp, 0, MPI_FLOAT, filetype, "native", MPI_INFO_NULL);
+    MPI_File_write_all(fp, &u[iz*x*y + y + 1], (x - 2) * (y - 2), MPI_FLOAT, &status);
     MPI_File_close(&fp);
     MPI_Type_free(&filetype);
-    MPI_Type_free(&strtype);
-    delete str;
 }
 
-char* ParallelProcess::convertToString(int iz) {
-    const char* fmt = "%6.1f ";
-    const char* endfmt = "%6.1f\n";
-    char *str = new char[(x - 2) * (y - 2) * CHARSPERNUM];
-    int count = 0;
-    for (int ix = 1; ix <= x - 2; ix++) {
-        for (int iy = 1; iy < y - 2; iy++) {
-            sprintf(&str[count * CHARSPERNUM], fmt, u[iz*x*y + ix*y + iy]);
-            count++;
-        }
-        // if we are on the right side of file change line
-        if(coords[1] == sqrt(threads) - 1)
-            sprintf(&str[count * CHARSPERNUM], endfmt, u[iz*x*y + ix*y + y-2]);
-        else sprintf(&str[count * CHARSPERNUM], fmt, u[iz*x*y + ix*y + y-2]);
-        count++;
-    }
-    return str;
-}
 
 /**
  *

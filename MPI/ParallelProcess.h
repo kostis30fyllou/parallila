@@ -10,7 +10,6 @@
 #define DTAG        1                  /* message tag */
 #define LTAG        2                  /* message tag */
 #define RTAG        3                  /* message tag */
-#define CHARSPERNUM 7                  /* chars per number*/
 
 typedef enum positions{UP=0, DOWN, LEFT, RIGHT} positions;
 

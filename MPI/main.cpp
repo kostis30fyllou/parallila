@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
     }
     tend = MPI_Wtime();
     process->write("final.dat", iz);
-    local = tend -tstart;
+    local = tend - tstart;
     process->getParallelTime(&global, &local);
     if(process->getRank() == 0) {
         printf("Total time elapsed = %lf \n",global);

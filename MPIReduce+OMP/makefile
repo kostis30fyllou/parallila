@@ -1,5 +1,5 @@
 CC = mpicxx
-CFLAGS = -O3 -lm
+CFLAGS = -O3 -lm -fopenmp
 OBJS =  main.o ParallelProcess.o
 
 all: $(OBJS)

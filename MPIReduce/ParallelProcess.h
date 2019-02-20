@@ -3,15 +3,14 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define NXPROB      80                /* x dimension of problem grid */
+#define NXPROB      80                 /* x dimension of problem grid */
 #define NYPROB      64                 /* y dimension of problem grid */
 #define STEPS       500                /* number of time steps */
-#define N       100                  /* number of reduce check steps */
+#define N           50                 /* number of reduce check steps */
 #define UTAG        0                  /* message tag */
 #define DTAG        1                  /* message tag */
 #define LTAG        2                  /* message tag */
 #define RTAG        3                  /* message tag */
-#define CHARSPERNUM 7                  /* chars per number*/
 
 typedef enum positions{UP=0, DOWN, LEFT, RIGHT} positions;
 

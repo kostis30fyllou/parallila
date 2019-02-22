@@ -6,7 +6,7 @@ int main(int argc, char* argv[]) {
     ParallelProcess *process;
     process = new ParallelProcess(&argc, &argv);
     process->inidat();
-    process->write("initial.dat", iz);
+    //process->write("initial.dat", iz);
     process->sync();
     tstart = MPI_Wtime();
     process->Send_Init();
@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
         process->WaitSend(1-iz);
     }
     tend = MPI_Wtime();
-    process->write("final.dat", iz);
+    //process->write("final.dat", iz);
     local = tend - tstart;
     process->getParallelTime(&global, &local);
     if(process->getRank() == 0) {

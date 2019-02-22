@@ -7,12 +7,12 @@
 #PBS -l walltime=0:01:00  		# Example, 1 minute
 
 # How many nodes and tasks per node
-#PBS -l nodes=16:ppn=8  			# 2 nodes with 8 tasks/node => 16 tasks
+#PBS -l nodes=1:ppn=2			# 1 node with 4 tasks/node => 4 tasks
 
 #Which Queue
 #PBS -q parsys			 	# This is the only accessible queue for rbs
 
-#PBS -N myJob   			# Jobname - it gives the stdout/err filenames
+#PBS -N 4   			# Jobname - it gives the stdout/err filenames
 
 ### Merge std[out|err]
 #PBS -k oe
@@ -21,14 +21,14 @@
 cd $PBS_O_WORKDIR  			# THIS IS MANDATORY,  PBS Starts everything from $HOME, one should change to submit directory
 
 #OpenMP Threads
-export OMP_NUM_THREADS=1
+export OMP_NUM_THREADS=2
 # OMP_NUM_THREADS * ppn should be max 8 (the total number of node cores= 8).
 # To use OpenMPI remember to include -fopenmp in compiler flags in order to activate OpenMP directives.
 
 # Having modules mpiP and openmpi loaded i.e.
 module load mpiP openmpi
 
-mpirun mpi.out				# That was compiled on front-end
+mpirun -np 2 mpi.out				# That was compiled on front-end
 	
  
 # No need for -np -machinefile etc. MPI gets this information from PBS

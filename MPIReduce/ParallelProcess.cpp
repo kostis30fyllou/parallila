@@ -5,10 +5,6 @@
  * Constructor and Destructor
  */
 
-struct Parms {
-    float cx;
-    float cy;
-} parms = {0.1, 0.1};
 
 ParallelProcess::ParallelProcess(int* argc, char** argv[]) {
     int periods[2];
@@ -72,42 +68,6 @@ ParallelProcess::~ParallelProcess() {
 }
 
 /**
- * Send, Receive, Start and Wait
- */
-void ParallelProcess::Send_Init() {
-    for(int iz=0; iz < 2; iz++) {
-        MPI_Send_init(&u[iz*x*y + y + 1], 1, row, positions[UP], DTAG, comm, &send[iz][UP]);
-        MPI_Send_init(&u[iz*x*y + (x-2)*y + 1], 1, row, positions[DOWN], UTAG, comm, &send[iz][DOWN]);
-        MPI_Send_init(&u[iz*x*y + y + 1], 1, column, positions[LEFT], RTAG, comm, &send[iz][LEFT]);
-        MPI_Send_init(&u[iz*x*y + 2*y - 2], 1, column, positions[RIGHT], LTAG, comm, &send[iz][RIGHT]);
-    }
-}
-
-void ParallelProcess::Recv_Init() {
-    for(int iz=0; iz < 2; iz++) {
-        MPI_Recv_init(&u[iz*x*y + 1], 1, row, positions[UP], UTAG, comm, &recv[iz][UP]);
-        MPI_Recv_init(&u[iz*x*y + (x-1)*y + 1], 1, row, positions[DOWN], DTAG, comm, &recv[iz][DOWN]);
-        MPI_Recv_init(&u[iz*x*y + y], 1, column, positions[LEFT], LTAG, comm, &recv[iz][LEFT]);
-        MPI_Recv_init(&u[iz*x*y + 2*y - 1], 1, column, positions[RIGHT], RTAG, comm, &recv[iz][RIGHT]);
-    }
-}
-
-void ParallelProcess::Start(int iz) {
-    for(int i = 0; i < 4; i++) {
-        MPI_Start(&send[iz][i]);
-        MPI_Start(&recv[iz][i]);
-    }
-}
-
-void ParallelProcess::WaitRecv(int iz) {
-    MPI_Waitall(4, recv[iz], MPI_STATUSES_IGNORE);
-}
-
-void ParallelProcess::WaitSend(int iz) {
-    MPI_Waitall(4, send[iz], MPI_STATUSES_IGNORE);
-}
-
-/**
  *  Write function
  */
 void ParallelProcess::write(const char* file, int iz) {
@@ -140,50 +100,4 @@ void ParallelProcess::inidat() {
             u[ix*y + iy] = (float)((ix-1) * ((x-2) - (ix-1) - 1) * (iy-1) * ((y-2) - (iy-1) - 1)) + 10;
 }
 
-int ParallelProcess::update(int ix, int iy, float* u1, float* u2) {
-    u2[ix*y+iy] = u1[ix*y+iy]  +
-                    parms.cx * (u1[(ix+1)*y+iy] +
-                                u1[(ix-1)*y+iy] -
-                                2.0 * u1[ix*y+iy]) +
-                    parms.cy * (u1[ix*y+iy+1] +
-                                u1[ix*y+iy-1] -
-                                2.0 * u1[ix*y+iy]);
-    if(u2[ix*y+iy] == u1[ix*y+iy])
-        return 0;
-    else return 1;
-}
-
-int ParallelProcess::inner_update(int iz) {
-    int changes = 0;
-    for (int ix = 2; ix < x-2; ix++) {
-        for (int iy = 2; iy < y-2; iy++){
-            changes += update(ix, iy, &(u[iz*x*y]), &(u[(1-iz)*x*y]));
-        }
-    }
-    return changes;
-}
-
-int ParallelProcess::outer_update(int iz) {
-    int changes = 0;
-    for(int iy = 1; iy < y-1; iy++) {
-        // UP
-        changes += update(1, iy, &(u[iz*x*y]), &(u[(1-iz)*x*y]));
-        // DOWN
-        changes += update(x-2, iy, &(u[iz*x*y]), &(u[(1-iz)*x*y]));
-    }
-
-    for(int ix = 1; ix < x-1; ix++) {
-        // LEFT
-        changes += update(ix, 1, &(u[iz*x*y]), &(u[(1-iz)*x*y]));
-        // RIGHT
-        changes += update(ix, y-2, &(u[iz*x*y]), &(u[(1-iz)*x*y]));
-    }
-    return changes;
-}
-
-int ParallelProcess::reduce(int *flag) {
-    int ret;
-    MPI_Allreduce(flag, &ret, 1, MPI_INT, MPI_SUM, comm);
-    return ret;
-}
 

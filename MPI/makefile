@@ -13,7 +13,7 @@ ParallelProcess.o: ParallelProcess.cpp
 	
 	
 clean:
-	rm -rf *.o *.out *.dat
+	rm -rf *.o* *.e* *.out *.dat
 
 
 	

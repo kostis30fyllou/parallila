@@ -1,9 +1,9 @@
 CC = mpicxx
-CFLAGS = -O3 -lm -fopenmp
+CFLAGS = -O3 -lm
 OBJS =  main.o ParallelProcess.o
 
 all: $(OBJS)
-	$(CC) -o mpi.out $(OBJS)
+	$(CC) -o mpi.out $(OBJS) -fopenmp
 
 main.o: main.cpp
 	$(CC) -c main.cpp $(CFLAGS)
@@ -13,6 +13,6 @@ ParallelProcess.o: ParallelProcess.cpp
 
 
 clean:
-	rm -rf *.o *.out *.dat
+	rm -rf *.o* *.e* *.out *.dat
 
 	

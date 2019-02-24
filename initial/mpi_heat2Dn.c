@@ -26,9 +26,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define NXPROB      20                /* x dimension of problem grid */
-#define NYPROB      20                 /* y dimension of problem grid */
-#define STEPS       1000                /* number of time steps */
+#define NXPROB      1280                /* x dimension of problem grid */
+#define NYPROB      1024                 /* y dimension of problem grid */
+#define STEPS       500                /* number of time steps */
 #define MAXWORKER   8                  /* maximum number of worker tasks */
 #define MINWORKER   3                  /* minimum number of worker tasks */
 #define BEGIN       1                  /* message tag */
@@ -46,6 +46,7 @@ struct Parms {
 int main (int argc, char *argv[])
 {
    void inidat(), prtdat(), update();
+   double tstart, tend;
    float  u[2][NXPROB][NYPROB];        /* array for grid */
    int	taskid,                     /* this task's unique id */
        numworkers,                 /* number of worker processes */
@@ -88,6 +89,7 @@ int main (int argc, char *argv[])
       averow = NXPROB/numworkers;
       extra = NXPROB%numworkers;
       offset = 0;
+      tstart = MPI_Wtime();
       for (i=1; i<=numworkers; i++)
       {
          rows = (i <= extra) ? averow+1 : averow; 
@@ -124,7 +126,8 @@ int main (int argc, char *argv[])
          MPI_Recv(&u[0][offset][0], rows*NYPROB, MPI_FLOAT, source,
                   msgtype, MPI_COMM_WORLD, &status);
       }
-
+      tend = MPI_Wtime();
+      printf("Total time elapsed = %lf - processes: %d\n",tend - tstart, numtasks);
       /* Write final output, call X graph and finalize MPI */
       printf("Writing final.dat file and generating graph...\n");
       prtdat(NXPROB, NYPROB, &u[0][0][0], "final.dat");

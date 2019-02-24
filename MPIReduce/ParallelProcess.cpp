@@ -21,9 +21,9 @@ ParallelProcess::ParallelProcess(int* argc, char** argv[]) {
     // Calculate dimensions of the grid
     while(dims[0]*dims[1] != threads) {
         if(dims[0]*dims[1] < threads) {
-            dims[0]++;
+            dims[1]++;
         }
-        else dims[1]--;
+        else dims[0]--;
     }
 
     // Cartesian create with reorder on

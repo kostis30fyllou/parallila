@@ -4,8 +4,8 @@
 #include <math.h>
 #include <omp.h>
 
-#define NXPROB      160                 /* x dimension of problem grid */
-#define NYPROB      128                 /* y dimension of problem grid */
+#define NXPROB      2560                 /* x dimension of problem grid */
+#define NYPROB      2048              /* y dimension of problem grid */
 #define STEPS       500                /* number of time steps */
 #define N           50                 /* number of reduce check steps */
 #define UTAG        0                  /* message tag */
@@ -40,6 +40,7 @@ public:
     // inline functions
     int getX(){ return x; };
     int getY(){ return y; };
+    int getThreads() { return threads;};
     int getRank() { return rank; };
     void sync() { MPI_Barrier(comm); };
 

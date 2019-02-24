@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define NXPROB      2560              /* x dimension of problem grid */
-#define NYPROB      2048                /* y dimension of problem grid */
+#define NXPROB      80            /* x dimension of problem grid */
+#define NYPROB      64               /* y dimension of problem grid */
 #define STEPS       500                /* number of time steps */
 #define UTAG        0                  /* message tag */
 #define DTAG        1                  /* message tag */
@@ -37,6 +37,7 @@ public:
     // inline functions
     int getX(){ return x; };
     int getY(){ return y; };
+    int getThreads() { return threads;};
     int getRank() { return rank; };
     void sync() { MPI_Barrier(comm); };
 

@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
 {
     #pragma omp single
     {
-        printf("Initializing open mp threads\n");
+        printf("Initializing OpenMP threads\n");
     }
 };
     for (int i = 0; i < STEPS; i++) {

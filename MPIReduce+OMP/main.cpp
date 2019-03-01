@@ -14,6 +14,12 @@ int main(int argc, char* argv[]) {
     process->Send_Init();
     process->Recv_Init();
 #pragma omp parallel
+{
+    #pragma omp single
+    {
+        printf("Initializing open mp threads\n");
+    }
+};
     for (int i = 0; i < STEPS; i++) {
         int changes = 0;
         process->Start(iz);
